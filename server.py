@@ -4,7 +4,7 @@ import struct
 
 import cv2
 
-HOST = ''
+HOST = 'localhost'
 PORT = 8089
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
