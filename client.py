@@ -1,25 +1,21 @@
+import cv2
+import numpy as np
 import socket
+import sys
+import pickle
+import struct
 
+cap=cv2.VideoCapture(0)
+clientsocket=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+clientsocket.connect((socket.gethostname(),8089))
 
-def client_program():
-    host = socket.gethostname()  # as both code is running on same pc
-    port = 5000  # socket server port number
+while True:
+    ret,frame=cap.read()
+    # Serialize frame
+    data = pickle.dumps(frame)
 
-    client_socket = socket.socket()  # instantiate
-    client_socket.connect((host, port))  # connect to the server
+    # Send message length first
+    message_size = struct.pack("L", len(data)) ### CHANGED
 
-    message = input(" -> ")  # take input
-
-    while message.lower().strip() != 'bye':
-        client_socket.send(message.encode())  # send message
-        data = client_socket.recv(1024).decode()  # receive response
-
-        print('Received from server: ' + data)  # show in terminal
-
-        message = input(" -> ")  # again take input
-
-    client_socket.close()  # close the connection
-
-
-if __name__ == '__main__':
-    client_program()
+    # Then data
+    clientsocket.sendall(message_size + data)
