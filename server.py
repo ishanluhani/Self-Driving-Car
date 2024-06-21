@@ -1,46 +1,35 @@
-import pickle
 import socket
-import struct
 
-import cv2
 
-HOST = 'localhost'
-PORT = 8089
+def run_server():
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-print('Socket created')
+    server_ip = "127.0.0.1"
+    port = 8000
 
-s.bind((HOST, PORT))
-print('Socket bind complete')
-s.listen(10)
-print('Socket now listening')
+    server.bind((server_ip, port))
+    server.listen(0)
+    print(f"Listening on {server_ip}:{port}")
 
-conn, addr = s.accept()
+    client_socket, client_address = server.accept()
+    print(f"Accepted connection from {client_address[0]}:{client_address[1]}")
 
-data = b'' ### CHANGED
-payload_size = struct.calcsize("L") ### CHANGED
+    while True:
+        request = client_socket.recv(1024)
+        request = request.decode("utf-8")  # convert bytes to string
 
-while True:
+        if request.lower() == "close":
+            client_socket.send("closed".encode("utf-8"))
+            break
 
-    # Retrieve message size
-    while len(data) < payload_size:
-        data += conn.recv(4096)
+        print(f"Received: {request}")
 
-    packed_msg_size = data[:payload_size]
-    data = data[payload_size:]
-    msg_size = struct.unpack("L", packed_msg_size)[0] ### CHANGED
+        response = "accepted".encode("utf-8")
+        client_socket.send(response)
 
-    # Retrieve all data based on message size
-    while len(data) < msg_size:
-        data += conn.recv(4096)
+    client_socket.close()
+    print("Connection to client closed")
+    server.close()
 
-    frame_data = data[:msg_size]
-    data = data[msg_size:]
 
-    # Extract frame
-    frame = pickle.loads(frame_data)
-
-    # Display
-    cv2.imshow('frame', frame)
-    print('hell')
-    cv2.waitKey(1)
+run_server()
