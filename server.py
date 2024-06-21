@@ -4,7 +4,9 @@ import socket
 def run_server():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    server_ip = "127.0.0.1"
+    name = socket.gethostname()
+    # print(name)
+    server_ip = socket.gethostbyname(name)
     port = 8000
 
     server.bind((server_ip, port))
